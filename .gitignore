@@ -1,7 +1,5 @@
 .idea
 
-# Custom plugins
-!web/app/plugins/scodx-simple-testimonials
 
 # Application
 web/app/plugins/*
@@ -11,6 +9,8 @@ web/app/upgrade
 web/app/uploads/*
 !web/app/uploads/.gitkeep
 
+# Custom plugins
+!web/app/plugins/scodx-simple-testimonials
 
 # WordPress
 web/wp
