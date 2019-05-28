@@ -190,15 +190,15 @@ function scodx_testimonials_process_form() {
     // creating new testimonial post
     $testimonial_id = wp_insert_post(
       array(
-        'comment_status'	=>	'closed',
-        'ping_status'		=>	'closed',
-        'post_title'		=>	$title,
-        'post_status'		=>	'pending',
-        'post_type'		=>	'testimonials'
+        'comment_status' => 'closed',
+        'ping_status'    => 'closed',
+        'post_title'     => $title,
+        'post_status'    => 'pending',
+        'post_type'      => 'testimonials',
       )
     );
 
-    // if we have a new testimonial the we need to populate its
+    // if we have a new testimonial then we need to populate its
     // custom fields
     if ($testimonial_id) {
       foreach ($custom_fields as $field_name => $value) {

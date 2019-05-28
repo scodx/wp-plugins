@@ -11,6 +11,7 @@ web/app/uploads/*
 
 # Custom plugins
 !web/app/plugins/scodx-simple-testimonials
+!web/app/plugins/scodx-fb-auth
 
 # WordPress
 web/wp
