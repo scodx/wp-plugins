@@ -9,6 +9,10 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+/**
+ * Alright, so I couldn't find a way to implement some kind of
+ * flash messages, so I had to rely on sessions
+ */
 session_start();
 
 /**
@@ -50,6 +54,12 @@ function scodx_testimonials_create_post_types() {
   register_post_type( "testimonials", $args );
 }
 
+/**
+ * Detects errors from the session storage, returns a rendered
+ * list of errors
+ *
+ * @return string
+ */
 function scodx_testimonials_process_errors() {
   $errors = '';
   $testimonials_session = $_SESSION['testimonials'];
@@ -61,6 +71,12 @@ function scodx_testimonials_process_errors() {
   return $errors;
 }
 
+/**
+ * Generates a sub header for the from, depending if the for is submitted or
+ * not or does it have some errors
+ *
+ * @return string
+ */
 function testimonials_form_subheader() {
   $sub_header = '';
   if (isset($_SESSION['testimonials'])) {
@@ -116,9 +132,17 @@ TESTIMONIALFORM;
 
   echo $html;
 
+  // resetting session data
   unset($_SESSION['testimonials']);
 }
 
+/**
+ * Validates form data. Constructs a WP_Error instance, if there are any
+ * return the instance, if not returns true (as it is TRUE that validates)
+ *
+ * @param $form_data
+ * @return bool|WP_Error
+ */
 function scodx_testimonials_validate_form($form_data) {
 
   // Instantiate the WP_Error object
@@ -141,6 +165,10 @@ function scodx_testimonials_validate_form($form_data) {
   return !empty($errors->get_error_codes()) ? $errors : true;
 }
 
+/**
+ * Processes the form: validates it, saves the testimonial and redirects.
+ * If there are any errors just redirects
+ */
 function scodx_testimonials_process_form() {
 
   $errors = scodx_testimonials_validate_form($_POST);
@@ -151,6 +179,7 @@ function scodx_testimonials_process_form() {
     // sanitize form values
     $title = sanitize_text_field( $_POST['testimonial-title'] );
 
+    // these are ACF keys that ids the custom fields
     $custom_fields = [
       // testimonial's author
       'field_5ce9d82ff6eaa' => sanitize_text_field( $_POST['testimonial-author'] ),
@@ -158,6 +187,7 @@ function scodx_testimonials_process_form() {
       'field_5ce9d7f8f6ea9' => esc_textarea( $_POST['testimonial-body'] ),
     ];
 
+    // creating new testimonial post
     $testimonial_id = wp_insert_post(
       array(
         'comment_status'	=>	'closed',
@@ -168,8 +198,9 @@ function scodx_testimonials_process_form() {
       )
     );
 
+    // if we have a new testimonial the we need to populate its
+    // custom fields
     if ($testimonial_id) {
-      // populating custom fields
       foreach ($custom_fields as $field_name => $value) {
         update_field($field_name, $value, $testimonial_id);
       }
@@ -180,12 +211,18 @@ function scodx_testimonials_process_form() {
     $_SESSION['testimonials']['errors'] = $errors;
   }
 
+  // Saving form data to session
   $_SESSION['testimonials']['data'] = $_POST;
 
   // redirecting to form
   wp_redirect($_SERVER['HTTP_REFERER']);
 }
 
+/**
+ * Processes what the shortcode is going to render
+ *
+ * @return false|string
+ */
 function scodx_testimonials_form_shortcode () {
   ob_start();
   scodx_testimonials_form();
@@ -194,9 +231,9 @@ function scodx_testimonials_form_shortcode () {
 
 
 // registering 'testimonial' post type
-add_action( 'init', 'scodx_testimonials_create_post_types' );
+add_action('init', 'scodx_testimonials_create_post_types');
 // registering shortcode to be able to render the form
-add_shortcode( 'simple_testimonials_form', 'scodx_testimonials_form_shortcode' );
+add_shortcode('simple_testimonials_form', 'scodx_testimonials_form_shortcode');
 // setting form processing for either anonymous or logged in users
-add_action( 'admin_post_nopriv_scodx_testimonial_form', 'scodx_testimonials_process_form' );
-add_action( 'admin_post_scodx_testimonial_form', 'scodx_testimonials_process_form' );
+add_action('admin_post_nopriv_scodx_testimonial_form', 'scodx_testimonials_process_form');
+add_action('admin_post_scodx_testimonial_form', 'scodx_testimonials_process_form');
