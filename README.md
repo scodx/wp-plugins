@@ -1,6 +1,6 @@
-## Wordpress sandbox
+# Wordpress sandbox
 
-# Install
+## Install
 
 - configure a localhost pointing to http://bluecoding-wp-bedrock.local
 - if you need the Facebook Auth plugin you might need to setup a https certificate in local machine
@@ -11,7 +11,7 @@
 - the user:password is: `admin:jiPPoVBkez%51^SV7c`, but you can change that quite easily with wp-cli
 
 
-# Facebook Auth
+## Facebook Auth
 
 If you need this plugin then you will need a https certificate in order to use it since facebook requires this feature.
 
