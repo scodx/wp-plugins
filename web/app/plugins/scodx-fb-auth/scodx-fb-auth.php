@@ -9,6 +9,10 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+/**
+ *  Define the users that initially are going to be
+ *  admin in this array
+ */
 define('FB_ADMIN', array(
   array(
     'name' => 'Oscar Sanchez',
@@ -17,27 +21,36 @@ define('FB_ADMIN', array(
 ));
 define('FB_AUTH_TABLE_ADMINS', 'scodx_fb_auth_admins');
 
+/**
+ * Adds the FB button to the login form, the removal of the other
+ * fields would need to be trough js/css
+ */
 function scodx_fb_auth_add_fb() {
   ?>
-  <script>
-  </script>
-
-<!--  <div class="fb-login-button" data-width="" data-size="large" data-button-type="login_with" data-auto-logout-link="false" data-use-continue-as="false"></div>-->
   <fb:login-button
     data-size="large"
     scope="public_profile,email"
     onlogin="checkLoginState();">
   </fb:login-button>
-
   <?php
 }
 
+/**
+ * Ajax response to the fb auth, start all the validation
+ * for the already logged in fb user
+ */
 function scodx_fb_auth_ajax_init() {
   if ( isset( $_POST['user_email'] ) ) {
     wp_send_json(scodx_fb_auth_process_auth($_POST));
   }
 }
 
+/**
+ * General function that processes the validation for the fb user
+ *
+ * @param $user_data
+ * @return array
+ */
 function scodx_fb_auth_process_auth($user_data) {
   $user_email = $user_data['user_email'];
   $user_name = $user_data['user_name'];
@@ -56,7 +69,7 @@ function scodx_fb_auth_process_auth($user_data) {
     // process role
     scodx_fb_auth_process_roles($user_id, $role);
     // sets auth cookie
-    scodx_fb_auth_login_wp_user($user_id);
+    wp_set_auth_cookie($user_id)
 
     return $user_id;
   };
@@ -70,6 +83,12 @@ function scodx_fb_auth_process_auth($user_data) {
   ];
 }
 
+/**
+ * Adds the specified role to the user if doesn't have it
+ *
+ * @param $user_id
+ * @param $role
+ */
 function scodx_fb_auth_process_roles($user_id, $role) {
   $user = get_userdata( $user_id );
   $user_roles = $user->roles;
@@ -81,10 +100,12 @@ function scodx_fb_auth_process_roles($user_id, $role) {
   }
 }
 
-function scodx_fb_auth_login_wp_user($user_id) {
-  wp_set_auth_cookie($user_id);
-}
-
+/**
+ * Validates if an email is in the list of the fb admins
+ *
+ * @param $email
+ * @return array|object|void|null
+ */
 function scodx_fb_auth_validate_admin($email) {
   global $wpdb;
   $table_name = $wpdb->prefix . FB_AUTH_TABLE_ADMINS;
@@ -92,11 +113,18 @@ function scodx_fb_auth_validate_admin($email) {
   return $wpdb->get_row($query);
 }
 
+/**
+ * inserts the js scripts into the login page, also enables
+ * backend var into frontend
+ */
 function scodx_fb_auth_enqueue_script() {
   wp_enqueue_script( 'scodx-fb-auth-js', plugins_url( 'assets/js/fb-auth.js', __FILE__ ),  array('jquery'));
   wp_localize_script( 'scodx-fb-auth-js', 'fb_auth', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 }
 
+/**
+ * Creates the fb admins table
+ */
 function scodx_fb_auth_install() {
   global $wpdb;
 
@@ -111,10 +139,13 @@ function scodx_fb_auth_install() {
 		PRIMARY KEY  (id)
 	) $charset_collate;";
 
-  require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+  require_once ABSPATH . 'wp-admin/includes/upgrade.php';
   dbDelta($sql);
 }
 
+/**
+ * Inserts the default fb admins
+ */
 function scodx_fb_auth_install_data() {
   global $wpdb;
 
@@ -131,13 +162,13 @@ function scodx_fb_auth_install_data() {
   }
 }
 
-
+// hooks for SQL creating and insertion of data at plugin activation
 register_activation_hook( __FILE__, 'scodx_fb_auth_install' );
 register_activation_hook( __FILE__, 'scodx_fb_auth_install_data' );
-
+// injecting custom scripts into login page
 add_action('login_enqueue_scripts', 'scodx_fb_auth_enqueue_script', 1);
-
+// hook to insert the fb login button
 add_action('login_form', 'scodx_fb_auth_add_fb');
-
+// enables ajax responses 
 add_action('wp_ajax_fb_auth_init', 'scodx_fb_auth_ajax_init');
 add_action('wp_ajax_nopriv_fb_auth_init', 'scodx_fb_auth_ajax_init');
