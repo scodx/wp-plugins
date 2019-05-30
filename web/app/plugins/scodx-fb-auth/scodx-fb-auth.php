@@ -17,7 +17,7 @@ define('FB_ADMIN', array(
   array(
     'name' => 'Oscar Sanchez',
     'email' => 'oscar.exe@gmail.com',
-  )
+  ),
 ));
 define('FB_AUTH_TABLE_ADMINS', 'scodx_fb_auth_admins');
 
@@ -26,7 +26,16 @@ define('FB_AUTH_TABLE_ADMINS', 'scodx_fb_auth_admins');
  * fields would need to be trough js/css
  */
 function scodx_fb_auth_add_fb() {
+  // removing fields from login form. I know, it must be a
+  // better way, but couldn't find it.
+  // Please note that this is also happening in the JS code
   ?>
+  <style>
+    form#loginform label, p.forgetmenot, p.submit {
+      display: none;
+      visibility: hidden;
+    }
+  </style>
   <fb:login-button
     data-size="large"
     scope="public_profile,email"
@@ -69,7 +78,7 @@ function scodx_fb_auth_process_auth($user_data) {
     // process role
     scodx_fb_auth_process_roles($user_id, $role);
     // sets auth cookie
-    wp_set_auth_cookie($user_id)
+    wp_set_auth_cookie($user_id);
 
     return $user_id;
   };
@@ -169,6 +178,6 @@ register_activation_hook( __FILE__, 'scodx_fb_auth_install_data' );
 add_action('login_enqueue_scripts', 'scodx_fb_auth_enqueue_script', 1);
 // hook to insert the fb login button
 add_action('login_form', 'scodx_fb_auth_add_fb');
-// enables ajax responses 
+// enables ajax responses
 add_action('wp_ajax_fb_auth_init', 'scodx_fb_auth_ajax_init');
 add_action('wp_ajax_nopriv_fb_auth_init', 'scodx_fb_auth_ajax_init');

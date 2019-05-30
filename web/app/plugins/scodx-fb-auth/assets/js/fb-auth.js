@@ -16,6 +16,13 @@ window.fbAsyncInit = function() {
   fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
 
+jQuery(window).ready(function () {
+  // removing fields from login form. I know, it must be a
+  // better way, but couldn't find it.
+  // Please note that this is also happening in the CSS code
+  jQuery('form#loginform label, p.forgetmenot, p.submit').remove();
+});
+
 function checkLoginState() {
   FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
